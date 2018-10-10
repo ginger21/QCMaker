@@ -1,10 +1,26 @@
-
+import os
 import cv2
 import serial
 import numpy as np
 from collections import Counter
 from creat_model import creat_model
 
+### 获取输入串口号 ###
+## port list 形如：
+# ['COM8',
+# '蓝牙链接上的标准串行 (COM8)',
+# 'BTHENUM\\{00001101-0000-1000-8000-00805F9B34FB}_LOCALMFG&0000\\8&15A53DA3&0&000000000000_0000001A']
+port_list = list(serial.tools.list_ports.comports())
+for i in range(len(port_list)):
+    com_id = list(port_list[i])[0]
+    name = list(port_list[i])[1]
+    hwid = list(port_list[i])[2]
+    status = hwid.split('\\')
+    if name[:2] == '蓝牙' and status[1][-1] != '0':
+        com = com_id
+
+# 当前文件夹路径
+root_path = sys.path[0]
 
 ### creat model ###
 height = 48
@@ -15,7 +31,7 @@ input_shape = [height, width, channels]
 model = creat_model(input_shape, num_classes = 3)
 
 ### load model trained ###
-path = r'C:\Users\QCmaker\Desktop\k_inception\weights\weights.h5'
+path = os.path.join(root_path, 'weights/weights.h5')
 model.load_weights(path)
 emo_classes = ['Angry', 'Happy', 'Neutral']
 
@@ -60,7 +76,7 @@ def prepare_image(image, target_width = 48, target_height = 48, max_zoom = 0.2):
     return image
 
 ### 打开串口 #####
-ser = serial.Serial('COM7', 9600)
+ser = serial.Serial(com, 9600)
 
 ### cap pic and predict ###
 # ROI框的显示位置
@@ -75,11 +91,14 @@ cap = cv2.VideoCapture(0)
 cap.set(3,320)
 cap.set(4,240)
 
+title = 'None'
 while(1):
     # get a frame
     ret, frame = cap.read()
     cv2.rectangle(frame, (x0, y0), (x0+width, y0+height), (0, 255, 0))
     # show a frame
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    cv2.putText(frame, title, (10, 30), font, 1, (0, 0, 255), 2, cv2.LINE_AA)
     cv2.imshow("capture", frame)
 
     roi = frame[y0:y0+height, x0:x0+width]
@@ -101,11 +120,10 @@ while(1):
                 emo_coun.append(emo_classes[np.argmax(classes)])
         emo_class = Counter(emo_coun)
         emo_class = emo_class.most_common(1)[0][0]
+        title = emo_class
         if emo_class == 'Angry':
-            for i in range(10):
                 ser.write(b'1')
         elif emo_class == 'Happy':
-            for i in range(10):
                 ser.write(b'2')
 
 cap.release()

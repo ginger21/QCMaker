@@ -1,16 +1,18 @@
 import os
+import sys
 import numpy as np
 import pandas as pd
 from PIL import Image
 
- 
-csv_data = 'C:/py/emo/fer2013/fer2013.csv'
+#当前文件夹路径
+root_path = sys.path[0]
+csv_data = os.path.join(root_path, 'data/fer2013.csv')
 
 # 图片保存路径
 # 训练集
-tra_path_root = 'C:/py/emo/train'
+tra_path_root = os.path.join(root_path, 'data/train')
 # 测试集
-val_path_root = 'C:/py/emo/val'
+val_path_root = os.path.join(root_path, 'data/val')
 
 emo_data = pd.read_csv(csv_data)
 emo_gb = dict(list(emo_data.groupby(['emotion', 'Usage'])))

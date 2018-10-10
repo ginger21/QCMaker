@@ -3,6 +3,9 @@ from keras.preprocessing.image import ImageDataGenerator
 import os
 from creat_model import creat_model
 
+# 当前文件夹路径
+root_path = sys.path[0]
+
 train_samples = 16175   # 训练样本数
 val_samples = 1969  # 测试样本数
 epochs = 30  #训练轮数
@@ -12,9 +15,8 @@ img_width, img_height, channels = 48, 48, 1
 input_shape = (img_width, img_height, channels)
 
 # 训练集和测试机路径
-target = 'c:/py/emo_net/k_inception/'
-train_data_dir = target + '/train'
-val_data_dir = target + '/val'
+train_data_dir = os.path.join(root_path, 'data/train')
+val_data_dir = os.path.join(root_path, 'data/val')
 
 train_pic_gen = ImageDataGenerator(rescale=1. / 255)  # 对输入图片进行归一化到0-1区间
 val_pic_gen = ImageDataGenerator(rescale=1. / 255)
@@ -41,10 +43,10 @@ model = creat_model(input_shape, num_classes=3)
 model.summary()
 
 # 权重文件保存文件夹
-weights_path = 'c:/py/emo_net/k_inception/weights'
+weights_path = os.path.join(root_path, 'weights')
 
 # 权重文件保存位置
-weights_file = 'c:/py/emo_net/k_inception/weights/weights.h5'
+weights_file = os.path.join(root_path, 'weights/weights.h5')
 
 if not os.path.exists(weights_path):
     os.makedirs(weights_path)
